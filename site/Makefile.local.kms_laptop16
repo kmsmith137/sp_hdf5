@@ -1,0 +1,2 @@
+INCDIR=$(HOME)/include
+CPP=clang++ -std=c++11 -Wall -O3 -I.
