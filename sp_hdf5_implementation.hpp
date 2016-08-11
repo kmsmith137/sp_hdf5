@@ -97,9 +97,11 @@ template<typename T> inline void hdf5_read_attribute(const H5::Attribute &a, T *
     a.read(hdf5_type<T>(), data);
 }
 
-template<typename T> inline void hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &expected_shape)
+template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::Attribute &a, const std::vector<hsize_t> &expected_shape)
 {
-    hdf5_read_attribute(x.openAttribute(attr_name), data, expected_shape);
+    std::vector<T> ret(hdf5_vprod(expected_shape));
+    hdf5_read_attribute(a, &ret[0], expected_shape);
+    return ret;
 }
 
 template<typename T> inline T hdf5_read_attribute(const H5::Attribute &a)
@@ -123,6 +125,16 @@ template<> inline std::string hdf5_read_attribute(const H5::Attribute &a)
 template<typename T> inline T hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name)
 {
     return hdf5_read_attribute<T> (x.openAttribute(attr_name));
+}
+
+template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<hsize_t> &expected_shape)
+{
+    return hdf5_read_attribute<T> (x.openAttribute(attr_name), expected_shape);
+}
+
+template<typename T> inline void hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &expected_shape)
+{
+    hdf5_read_attribute(x.openAttribute(attr_name), data, expected_shape);
 }
 
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T &val)

@@ -32,9 +32,12 @@ inline std::vector<hsize_t> hdf5_get_shape(const H5::Attribute &attr);
 inline std::vector<hsize_t> hdf5_get_attribute_shape(const H5::H5Location &x, const std::string &attr_name);
 
 template<typename T> inline T hdf5_read_attribute(const H5::Attribute &a);
-template<typename T> inline T hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name);
 template<typename T> inline void hdf5_read_attribute(const H5::Attribute &a, T *data, const std::vector<hsize_t> &expected_shape);
+template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::Attribute &a, const std::vector<hsize_t> &expected_shape);
+
+template<typename T> inline T hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name);
 template<typename T> inline void hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, T *data, const std::vector<hsize_t> &expected_shape);
+template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<hsize_t> &expected_shape);
 
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T &val);     // scalar
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &val);   // 1-dim
