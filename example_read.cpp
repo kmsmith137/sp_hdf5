@@ -22,11 +22,11 @@ int main(int argc, char **argv)
 
     int i = hdf5_read_attribute<int>(f, "ATTR_INT");
     double d = hdf5_read_attribute<double>(f, "ATTR_DOUBLE");
-    // string s = hdf5_read_attribute<string>(f, "ATTR_STRING");
+    string s = hdf5_read_attribute<string>(f, "ATTR_STRING");
 
     assert_equal("ATTR_INT", i, 5);
     assert_equal("ATTR_DOUBLE", d, 5.8);
-    // assert_equal("ATTR_STRING", s, string("hello"));
+    assert_equal("ATTR_STRING", s, string("hello"));
         
     return 0;
 }

@@ -114,7 +114,9 @@ template<> inline std::string hdf5_read_attribute(const H5::Attribute &a)
     hdf5_check_shape(a, std::vector<hsize_t>());
 
     std::string ret;
-    a.read(H5::PredType::C_S1, ret);
+    H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
+
+    a.read(strtype, ret);
     return ret;
 }
 
