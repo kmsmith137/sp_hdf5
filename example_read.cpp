@@ -25,12 +25,14 @@ int main(int argc, char **argv)
     string s = hdf5_read_attribute<string>(f, "ATTR_STRING");
     vector<double> attr1d = hdf5_read_attribute<double> (f, "ATTR_1D", {3});
     vector<int> attr2d = hdf5_read_attribute<int> (f, "ATTR_2D", {3,2});
+    vector<double> dset = hdf5_read_dataset<double> (f, "DSET", {2,3});
 
     assert_equal("ATTR_INT", i, 5);
     assert_equal("ATTR_DOUBLE", d, 5.8);
     assert_equal("ATTR_STRING", s, string("hello"));
     assert_equal("ATTR_1D", attr1d, vector<double>({2.0, 2.5, 3.0}));
     assert_equal("ATTR_2D", attr2d, vector<int>({4,5,6,7,8,9}));
+    assert_equal("DSET", dset, vector<double>({10.,11.,12.,13.,14.,15.}));
 
     assert_equal("dset exists", hdf5_dataset_exists(f,"DSET"), true);
     assert_equal("nonexistent dset", hdf5_dataset_exists(f,"NONEXISTENT"), false);

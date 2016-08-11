@@ -227,6 +227,26 @@ inline void hdf5_read_dataset(const H5::DataSet &d, T *out, const std::vector<hs
 }
 
 template<typename T> 
+inline std::vector<T> hdf5_read_dataset(const H5::DataSet &ds, const std::vector<hsize_t> &expected_shape)
+{
+    std::vector<T> ret(hdf5_vprod(expected_shape));
+    hdf5_read_dataset(ds, &ret[0], expected_shape);
+    return ret;
+}
+
+template<typename T> 
+inline void hdf5_read_dataset(const H5::CommonFG &f, const std::string &dataset_name, T *out, const std::vector<hsize_t> &expected_shape)
+{
+    hdf5_read_dataset(f.openDataSet(dataset_name), out, expected_shape);
+}
+
+template<typename T> 
+inline std::vector<T> hdf5_read_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<hsize_t> &expected_shape)
+{
+    return hdf5_read_dataset<T> (f.openDataSet(dataset_name), expected_shape);
+}
+
+template<typename T> 
 inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, const std::vector<hsize_t> &shape)
 {
     H5::DataSpace dataspace(shape.size(), &shape[0]);
