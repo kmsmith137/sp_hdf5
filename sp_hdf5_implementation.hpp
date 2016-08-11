@@ -122,6 +122,41 @@ template<typename T> inline T hdf5_read_attribute(const H5::H5Location &x, const
     return hdf5_read_attribute<T> (x.openAttribute(attr_name));
 }
 
+template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T &val)
+{
+    H5::DataSpace attrspace(H5S_SCALAR);
+    H5::Attribute a = x.createAttribute(attr_name, hdf5_type<T> (), attrspace);
+    a.write(hdf5_type<T> (), &val);
+}
+
+template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &val)
+{
+    hsize_t n = val.size();
+    H5::DataSpace attrspace(H5S_SIMPLE);
+    attrspace.setExtentSimple(1, &n);
+
+    H5::Attribute a = x.createAttribute(attr_name, hdf5_type<T>(), attrspace);
+    a.write(hdf5_type<T>(), &val[0]);
+}
+
+template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape)
+{
+    H5::DataSpace attrspace(shape.size() ? H5S_SIMPLE : H5S_SCALAR);
+
+    if (shape.size() > 0)
+	attrspace.setExtentSimple(shape.size(), &shape[0]);
+
+    H5::Attribute a = x.createAttribute(attr_name, hdf5_type<T>(), attrspace);
+    a.write(hdf5_type<T>(), data);
+}
+
+template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &data, const std::vector<hsize_t> &shape)
+{
+    if (data.size() != hdf5_vprod(shape))
+	throw std::runtime_error("hdf5_write_attribute: " + attr_name + ": length of data vector is inconsistent with shape array");
+    hdf5_write_attribute(x, attr_name, &data[0], shape);    
+}
+
 
 // -------------------------------------------------------------------------------------------------
 //
@@ -166,7 +201,7 @@ template<typename T>
 inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, const std::vector<hsize_t> &shape)
 {
     if (data.size() != hdf5_vprod(shape))
-	throw std::runtime_error("hdf5_write_dataset: length of data vector is inconsistent with shape array");
+	throw std::runtime_error("hdf5_write_dataset: " + dataset_name + ": length of data vector is inconsistent with shape array");
     hdf5_write_dataset(f, dataset_name, &data[0], shape);
 }
 

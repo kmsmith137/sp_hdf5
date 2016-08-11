@@ -36,9 +36,10 @@ template<typename T> inline T hdf5_read_attribute(const H5::H5Location &x, const
 template<typename T> inline void hdf5_read_attribute(const H5::Attribute &a, T *data, const std::vector<hsize_t> &expected_shape);
 template<typename T> inline void hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, T *data, const std::vector<hsize_t> &expected_shape);
 
-template<typename T> inline T hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T &val);
-template<typename T> inline T hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape);
-
+template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T &val);   // scalar
+template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &val);   // 1-dim
+template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape);
+template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &data, const std::vector<hsize_t> &shape);
 
 // Dataset syntax
 //   bool e = x.xxx     where x is an H5CommonFG (= H5File or H5Group)
