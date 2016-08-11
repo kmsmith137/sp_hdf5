@@ -105,7 +105,8 @@ template<typename T> inline void hdf5_read_attribute(const H5::H5Location &x, co
 template<typename T> inline T hdf5_read_attribute(const H5::Attribute &a)
 {
     T ret;
-    return hdf5_read_attribute<T> (a, &ret, std::vector<hsize_t> ());
+    hdf5_read_attribute<T> (a, &ret, std::vector<hsize_t> ());
+    return ret;
 }
 
 template<> inline std::string hdf5_read_attribute(const H5::Attribute &a)

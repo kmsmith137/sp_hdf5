@@ -11,7 +11,7 @@ namespace sp_hdf5 {
 #endif
 
 // These inlines are a little silly, but I never remember the syntax otherwise!
-inline H5::H5File hdf5_open_rdonly(const std::string &filename) { return H5::H5File(filename, H5F_ACC_RDONLY); }
+inline H5::H5File hdf5_open(const std::string &filename)        { return H5::H5File(filename, H5F_ACC_RDONLY); }
 inline H5::H5File hdf5_open_trunc(const std::string &filename)  { return H5::H5File(filename, H5F_ACC_TRUNC); }
 inline H5::H5File hdf5_open_excl(const std::string &filename)   { return H5::H5File(filename, H5F_ACC_EXCL); }
 
