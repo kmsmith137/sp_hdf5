@@ -16,11 +16,19 @@ namespace sp_hdf5 {
 template<typename T> inline const H5::PredType & hdf5_type();
 
 // Reference: https://www.hdfgroup.org/HDF5/doc/cpplus_RM/class_h5_1_1_pred_type.html
-// FIXME should define more!
-template<> inline const H5::PredType & hdf5_type<int>()            { return H5::PredType::NATIVE_INT; }
-template<> inline const H5::PredType & hdf5_type<float>()          { return H5::PredType::NATIVE_FLOAT; }
-template<> inline const H5::PredType & hdf5_type<double>()         { return H5::PredType::NATIVE_DOUBLE; }
-template<> inline const H5::PredType & hdf5_type<unsigned char>()  { return H5::PredType::NATIVE_UCHAR; }
+template<> inline const H5::PredType & hdf5_type<char>()                { return H5::PredType::NATIVE_CHAR; }
+template<> inline const H5::PredType & hdf5_type<unsigned char>()       { return H5::PredType::NATIVE_UCHAR; }
+template<> inline const H5::PredType & hdf5_type<short>()               { return H5::PredType::NATIVE_SHORT; }
+template<> inline const H5::PredType & hdf5_type<unsigned short>()      { return H5::PredType::NATIVE_USHORT; }
+template<> inline const H5::PredType & hdf5_type<int>()                 { return H5::PredType::NATIVE_INT; }
+template<> inline const H5::PredType & hdf5_type<unsigned int>()        { return H5::PredType::NATIVE_UINT; }
+template<> inline const H5::PredType & hdf5_type<long>()                { return H5::PredType::NATIVE_LONG; }
+template<> inline const H5::PredType & hdf5_type<unsigned long>()       { return H5::PredType::NATIVE_ULONG; }
+template<> inline const H5::PredType & hdf5_type<long long>()           { return H5::PredType::NATIVE_LLONG; }
+template<> inline const H5::PredType & hdf5_type<unsigned long long>()  { return H5::PredType::NATIVE_ULLONG; }
+template<> inline const H5::PredType & hdf5_type<float>()               { return H5::PredType::NATIVE_FLOAT; }
+template<> inline const H5::PredType & hdf5_type<double>()              { return H5::PredType::NATIVE_DOUBLE; }
+template<> inline const H5::PredType & hdf5_type<long double>()         { return H5::PredType::NATIVE_LDOUBLE; }
 
 // Multiply elements of a vector (for range-checking, see below)
 inline hsize_t hdf5_vprod(const std::vector<hsize_t> &v)
@@ -196,6 +204,7 @@ inline std::vector<hsize_t> hdf5_get_dataset_shape(const H5::CommonFG &f, const 
     return hdf5_get_shape(f.openDataSet(dataset_name));
 }
 
+// FIXME is there a better way to implement this?
 inline bool hdf5_dataset_exists(const H5::H5Location &f, const std::string &dataset_name)
 {
     htri_t ret = H5Lexists(f.getId(), dataset_name.c_str(), H5P_DEFAULT);
