@@ -1,4 +1,6 @@
 *~
 Makefile.local
 example.hdf5
+example_read
 example_write
+.testfile

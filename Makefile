@@ -17,15 +17,20 @@ INCFILES=sp_hdf5.hpp sp_hdf5_implementation.hpp
 
 all: $(EXAMPLES)
 
+test: .testfile
+
 example_read: example_read.cpp $(INCFILES)
 	$(CPP) -o $@ $< -lhdf5_cpp -lhdf5
 
 example_write: example_write.cpp $(INCFILES)
 	$(CPP) -o $@ $< -lhdf5_cpp -lhdf5
 
+.testfile: $(EXAMPLES)
+	./example_write && ./example_read && touch .testfile
+
 install:
 	mkdir -p $(INCDIR)
 	cp -f $(INCFILES) $(INCDIR)/
 
 clean:
-	rm -f *~ $(EXAMPLES) example.hdf5
+	rm -f *~ $(EXAMPLES) example.hdf5 .testfile
