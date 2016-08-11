@@ -196,6 +196,20 @@ inline std::vector<hsize_t> hdf5_get_dataset_shape(const H5::CommonFG &f, const 
     return hdf5_get_shape(f.openDataSet(dataset_name));
 }
 
+inline bool hdf5_dataset_exists(const H5::H5Location &f, const std::string &dataset_name)
+{
+    htri_t ret = H5Lexists(f.getId(), dataset_name.c_str(), H5P_DEFAULT);
+    if (ret <= 0)
+	return false;
+
+    H5O_info_t infobuf;
+    herr_t status = H5Oget_info_by_name(f.getId(), dataset_name.c_str(), &infobuf, H5P_DEFAULT);
+    if (status < 0)
+	throw std::runtime_error("H5Oget_info_by_name() failed?!");
+
+    return (infobuf.type == H5O_TYPE_DATASET);
+}
+
 template<typename T>
 inline void hdf5_read_dataset(const H5::DataSet &d, T *out, const std::vector<hsize_t> &expected_shape)
 {

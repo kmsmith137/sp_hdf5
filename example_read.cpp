@@ -31,6 +31,10 @@ int main(int argc, char **argv)
     assert_equal("ATTR_STRING", s, string("hello"));
     assert_equal("ATTR_1D", attr1d, vector<double>({2.0, 2.5, 3.0}));
     assert_equal("ATTR_2D", attr2d, vector<int>({4,5,6,7,8,9}));
-        
+
+    assert_equal("dset exists", hdf5_dataset_exists(f,"DSET"), true);
+    assert_equal("nonexistent dset", hdf5_dataset_exists(f,"NONEXISTENT"), false);
+    assert_equal("attr instead of dset", hdf5_dataset_exists(f,"ATTR_INT"), false);
+
     return 0;
 }

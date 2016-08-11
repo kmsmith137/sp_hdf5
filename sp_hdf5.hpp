@@ -1,3 +1,5 @@
+// Note: declarations are here; all definitions are in sp_hdf5_implementation.hpp
+
 #ifndef _SP_HDF5_HPP
 #define _SP_HDF5_HPP
 
@@ -45,13 +47,22 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &data, const std::vector<hsize_t> &shape);
 
 // Dataset syntax
-//   bool e = x.xxx     where x is an H5CommonFG (= H5File or H5Group)
-// 
+//   H5DataSet d = x.openDataSet(name)
+//
+// plus the routines below!
 
 inline std::vector<hsize_t> hdf5_get_shape(const H5::DataSet &ds);
 inline std::vector<hsize_t> hdf5_get_dataset_shape(const H5::CommonFG &f, const std::string &dataset_name);
+inline bool hdf5_dataset_exists(const H5::H5Location &f, const std::string &dataset_name);
 
 template<typename T> inline void hdf5_read_dataset(const H5::DataSet &ds, T *out, const std::vector<hsize_t> &expected_shape);
+template<typename T> inline std::vector<T> hdf5_read_dataset(const H5::DataSet &ds, const std::vector<hsize_t> &expected_shape);
+
+template<typename T> inline void hdf5_read_dataset(const H5::CommonFG &ds, T *out, const std::vector<hsize_t> &expected_shape);
+template<typename T> inline std::vector<T> hdf5_read_dataset(const H5::DataSet &ds, const std::vector<hsize_t> &expected_shape);
+
+template<typename T> inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, const std::vector<hsize_t> &shape);
+template<typename T> inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, const std::vector<hsize_t> &shape);
 
 
 }  // namespace sp_hdf5
