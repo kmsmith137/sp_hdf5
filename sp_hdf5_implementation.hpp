@@ -129,6 +129,14 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
     a.write(hdf5_type<T> (), &val);
 }
 
+template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::string &val)
+{
+    H5::DataSpace attrspace(H5S_SCALAR);
+    H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
+    H5::Attribute a = x.createAttribute(attr_name, strtype, attrspace);
+    a.write(strtype, val);
+}
+
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &val)
 {
     hsize_t n = val.size();

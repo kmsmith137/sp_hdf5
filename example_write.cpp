@@ -11,6 +11,7 @@ int main(int argc, char **argv)
 
     hdf5_write_attribute(f, "ATTR_INT", 5);
     hdf5_write_attribute(f, "ATTR_DOUBLE", 5.8);
+    hdf5_write_attribute(f, "ATTR_STRING", string("hello"));
     hdf5_write_attribute(f, "ATTR_1D", vector<double> ({2.0, 2.5, 3.0}));
     hdf5_write_attribute(f, "ATTR_2D", vector<int> ({4,5,6,7,8,9}), {3,2});
 
