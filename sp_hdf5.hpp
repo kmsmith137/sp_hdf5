@@ -2,6 +2,7 @@
 #define _SP_HDF5_HPP
 
 #include <vector>
+#include <sstream>
 #include <H5Cpp.h>
 
 namespace sp_hdf5 {
@@ -10,47 +11,47 @@ namespace sp_hdf5 {
 #endif
 
 // These inlines are a little silly, but I never remember the syntax otherwise!
-inline H5::H5File hdf5_open_rdonly(const std::string &filename)  { return H5::H5File(filename, H5F_ACC_RDONLY); }
-inline H5::H5File hdf5_open_wtrunc(const std::string &filename)  { return H5::H5File(filename, H5F_ACC_TRUNC); }
-inline H5::H5File hdf5_open_wexcl(const std::string &filename)   { return H5::H5File(filename, H5F_ACC_EXCL); }
+inline H5::H5File hdf5_open_rdonly(const std::string &filename) { return H5::H5File(filename, H5F_ACC_RDONLY); }
+inline H5::H5File hdf5_open_trunc(const std::string &filename)  { return H5::H5File(filename, H5F_ACC_TRUNC); }
+inline H5::H5File hdf5_open_excl(const std::string &filename)   { return H5::H5File(filename, H5F_ACC_EXCL); }
 
-// Maps C++ type to HDF5 type (see end of file for instantiations)
-template<typename T> inline const H5::PredType & hdf5_type();
+// Group syntax 
+//     H5Group g = x.openGroup(name)          where x is an H5CommonFG (= H5File or H5Group)
+//     H5Group g = x.createGroup(name)
 
-// multiply elements of a vector (for range-checking, see below)
-inline hsize_t hdf5_prod(const std::vector<hsize_t> &v)
-{
-    hsize_t ret = 1;
-    for (unsigned int i = 0; i < v.size(); i++)
-	ret *= v[i];
-    return ret;
-}
 
-// Non range checked version
-// Note: H5::CommonFG is a base class of H5File and H5Group
-template<typename T> 
-inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, const std::vector<hsize_t> &shape)
-{
-    H5::DataSpace dataspace(shape.size(), &shape[0]);
-    H5::DataSet dataset = f.createDataSet(dataset_name, hdf5_type<T>(), dataspace);
-    dataset.write(data, hdf5_type<T>());
-}
+// Attribute syntax 
+//     bool e = x.attrExists(name)             where x is an H5Location (base class of H5File, H5Group, H5DataSet)
+//     H5Attribute a = x.openAttribute(name)
+//
+// plus the functions below!
 
-// Range checked version
-template<typename T> 
-inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, const std::vector<hsize_t> &shape)
-{
-    if (data.size() != hdf5_prod(shape))
-	throw std::runtime_error("xx");
-    hdf5_write_dataset(f, dataset_name, &data[0], shape);
-}
+inline std::string hdf5_get_name(const H5::IdComponent &x);
+inline std::vector<hsize_t> hdf5_get_shape(const H5::DataSpace &ds);
+inline std::vector<hsize_t> hdf5_get_shape(const H5::Attribute &attr);
+inline std::vector<hsize_t> hdf5_get_attribute_shape(const H5::H5Location &x, const std::string &attr_name);
 
-// Reference: https://www.hdfgroup.org/HDF5/doc/cpplus_RM/class_h5_1_1_pred_type.html
-template<> inline const H5::PredType & hdf5_type<int>()            { return H5::PredType::NATIVE_INT; }
-template<> inline const H5::PredType & hdf5_type<float>()          { return H5::PredType::NATIVE_FLOAT; }
-template<> inline const H5::PredType & hdf5_type<double>()         { return H5::PredType::NATIVE_DOUBLE; }
-template<> inline const H5::PredType & hdf5_type<unsigned char>()  { return H5::PredType::NATIVE_UCHAR; }
+template<typename T> inline T hdf5_read_attribute(const H5::Attribute &a);
+template<typename T> inline T hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name);
+template<typename T> inline void hdf5_read_attribute(const H5::Attribute &a, T *data, const std::vector<hsize_t> &expected_shape);
+template<typename T> inline void hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, T *data, const std::vector<hsize_t> &expected_shape);
+
+template<typename T> inline T hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T &val);
+template<typename T> inline T hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape);
+
+
+// Dataset syntax
+//   bool e = x.xxx     where x is an H5CommonFG (= H5File or H5Group)
+// 
+
+inline std::vector<hsize_t> hdf5_get_shape(const H5::DataSet &ds);
+inline std::vector<hsize_t> hdf5_get_dataset_shape(const H5::CommonFG &f, const std::string &dataset_name);
+
+template<typename T> inline void hdf5_read_dataset(const H5::DataSet &ds, T *out, const std::vector<hsize_t> &expected_shape);
+
 
 }  // namespace sp_hdf5
+
+#include "sp_hdf5_implementation.hpp"
 
 #endif // _SP_HDF5_HPP

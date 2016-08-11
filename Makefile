@@ -12,16 +12,20 @@ ifndef INCDIR
 $(error Fatal: Makefile.local must define INCDIR variable)
 endif
 
-EXAMPLES=example_write
+EXAMPLES=example_read example_write
+INCFILES=sp_hdf5.hpp sp_hdf5_implementation.hpp
 
 all: $(EXAMPLES)
 
-example_write: example_write.cpp sp_hdf5.hpp
+example_read: example_read.cpp $(INCFILES)
+	$(CPP) -o $@ $< -lhdf5_cpp -lhdf5
+
+example_write: example_write.cpp $(INCFILES)
 	$(CPP) -o $@ $< -lhdf5_cpp -lhdf5
 
 install:
 	mkdir -p $(INCDIR)
-	cp -f sp_hdf5.hpp $(INCDIR)/
+	cp -f $(INCFILES) $(INCDIR)/
 
 clean:
 	rm -f *~ $(EXAMPLES) example.hdf5
