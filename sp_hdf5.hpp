@@ -1,3 +1,4 @@
+// This is a header-only library, but you'll still need to link the HDF5 library with -lhdf5_cpp -lhdf5
 // Note: declarations are here; all definitions are in sp_hdf5_implementation.hpp
 
 #ifndef _SP_HDF5_HPP
