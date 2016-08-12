@@ -3,6 +3,7 @@
 #include <iostream>
 #include "sp_hdf5.hpp"
 
+using namespace H5;
 using namespace std;
 using namespace sp_hdf5;
 
@@ -11,14 +12,14 @@ template<typename T>
 inline void assert_equal(const char *msg, const T &x, const T &y)
 {
     if (x != y)
-	throw std::runtime_error(msg + string(": wrong value!"));
+	throw runtime_error(msg + string(": wrong value!"));
     cout << msg << ": looks good\n";
 }
 
 
 int main(int argc, char **argv)
 {
-    H5::H5File f = hdf5_open("example.hdf5");
+    H5File f = hdf5_open("example.hdf5");
 
     int i = hdf5_read_attribute<int>(f, "ATTR_INT");
     double d = hdf5_read_attribute<double>(f, "ATTR_DOUBLE");
