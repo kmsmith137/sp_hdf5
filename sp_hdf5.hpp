@@ -1,5 +1,10 @@
 // This is a header-only library, but you'll still need to link the HDF5 library with -lhdf5_cpp -lhdf5
-// Note: declarations are here; all definitions are in sp_hdf5_implementation.hpp
+//
+// For documentation, it's easiest to start by looking at the example programs sp_hdf5/example_read.cpp
+// and sp_hdf5/example_write.cpp.  For further details, it's easiest to refer to this .hpp file, which
+// should be pretty readable (I hope!).
+//
+// Note: declarations are here; all definitions are in sp_hdf5_implementation.hpp.
 
 #ifndef _SP_HDF5_HPP
 #define _SP_HDF5_HPP

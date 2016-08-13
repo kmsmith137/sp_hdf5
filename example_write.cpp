@@ -1,4 +1,5 @@
-// g++ -std=c++11 -Wall -I. -o example_write example_write.cpp -lhdf5_cpp -lhdf5
+// This toy program is intended to be documentation, by giving quick-and-dirty examples of
+// key routines, and also a unit test, by verifying that data can be written and read back.
 
 #include "sp_hdf5.hpp"
 
