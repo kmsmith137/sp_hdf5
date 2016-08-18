@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <sstream>
+#include <stdexcept>
 #include <H5Cpp.h>
 
 namespace sp_hdf5 {
