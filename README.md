@@ -10,12 +10,14 @@ digestible (I hope!)
 
 ## Installation
 
-- You'll need to install HDF5 (including C++ support), if it's not already installed.  Some hints:
+- You'll need to install HDF5 (including C++ support), if it's not already installed.
+  A fairly recent hdf5 is needed.  I know that 1.8.17 works, and 1.8.11 is too old.
+  Some installation hints:
 
   ```
-  brew install homebrew/science/hdf5        # osx
-  yum install hdf5-devel                    # linux centos
-  ./configure --prefix=$HOME --enable-cxx   # compiling from scratch
+  brew install homebrew/science/hdf5                          # osx
+  yum install hdf5-devel                                      # linux centos
+  ./configure --prefix=$HOME --enable-cxx; make all install   # compiling from scratch
   ```
 
 - Create a file ./Makefile.local defining the variables CPP and INCDIR.  See examples in the site/ subdirectory.
