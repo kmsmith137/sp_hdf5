@@ -11,8 +11,7 @@ digestible (I hope!)
 ## Installation
 
 - You'll need to install HDF5 (including C++ support), if it's not already installed.
-  A fairly recent hdf5 is needed.  I know that 1.8.17 works, and 1.8.11 is too old.
-  Some installation hints:
+  HDF5 1.8.12 or later is required.  Some installation hints:
 
   ```
   brew install homebrew/science/hdf5                          # osx
