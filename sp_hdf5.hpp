@@ -16,6 +16,7 @@
 #include <vector>
 #include <sstream>
 #include <stdexcept>
+#include <unordered_set>
 #include <H5Cpp.h>
 
 namespace sp_hdf5 {
@@ -43,6 +44,8 @@ inline std::string hdf5_get_name(const H5::IdComponent &x);
 inline std::vector<hsize_t> hdf5_get_shape(const H5::DataSpace &ds);
 inline std::vector<hsize_t> hdf5_get_shape(const H5::Attribute &attr);
 inline std::vector<hsize_t> hdf5_get_attribute_shape(const H5::H5Location &x, const std::string &attr_name);
+
+inline std::unordered_set<std::string> hdf5_get_attr_names(const H5::H5Location &x);
 
 template<typename T> inline T hdf5_read_attribute(const H5::Attribute &a);
 template<typename T> inline void hdf5_read_attribute(const H5::Attribute &a, T *data, const std::vector<hsize_t> &expected_shape);

@@ -89,6 +89,24 @@ inline std::vector<hsize_t> hdf5_attribute_shape(const H5::H5Location &x, const 
     return hdf5_get_shape(x.openAttribute(attr_name));
 }
 
+inline void _attr_enumerate(H5::H5Location &loc, const H5std_string attr_name, void *opaque)
+{
+    auto s = reinterpret_cast<std::unordered_set<std::string> *> (opaque);
+    s->insert(attr_name);
+}
+
+inline std::unordered_set<std::string> hdf5_get_attr_names(const H5::H5Location &x)
+{
+    std::unordered_set<std::string> s;
+    H5::H5Location &y = const_cast<H5::H5Location &> (x);
+
+    int ret = y.iterateAttrs(_attr_enumerate, NULL, &s);
+    if (ret != 0)
+	throw std::runtime_error("sp_hdf5: not all attributes were processed in hdf5_get_attr_names()");
+
+    return s;
+}
+
 inline void hdf5_check_shape(const H5::Attribute &a, const std::vector<hsize_t> &expected_shape)
 {
     std::vector<hsize_t> actual_shape = hdf5_get_shape(a);

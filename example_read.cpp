@@ -22,6 +22,13 @@ int main(int argc, char **argv)
 {
     H5File f = hdf5_open("example.hdf5");
 
+    unordered_set<string> attrs = hdf5_get_attr_names(f);
+
+    cout << "attrs:";
+    for (const string &attr_name: attrs)
+	cout << " " << attr_name;
+    cout << "\n";
+
     int i = hdf5_read_attribute<int>(f, "ATTR_INT");
     double d = hdf5_read_attribute<double>(f, "ATTR_DOUBLE");
     string s = hdf5_read_attribute<string>(f, "ATTR_STRING");
