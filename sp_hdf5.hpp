@@ -34,18 +34,20 @@ inline H5::Group hdf5_open_group(const H5::CommonFG &x, const std::string &name)
 inline H5::Group hdf5_create_group(const H5::CommonFG &x, const std::string &name)  { return x.createGroup(name); }
 
 
-// Attribute syntax 
-//     bool e = x.attrExists(name)             where x is an H5Location (base class of H5File, Group, H5DataSet)
-//     H5Attribute a = x.openAttribute(name)
 //
-// plus the functions below!
+// Atributes
+//
+
+inline H5::Attribute hdf5_open_attribute(const H5::H5Location &x, const std::string &attr_name)  { return x.openAttribute(attr_name); }
+
+inline bool hdf5_attribute_exists(const H5::H5Location &x, const std::string &attr_name)  { return x.attrExists(attr_name); }
+
+inline std::unordered_set<std::string> hdf5_get_attribute_names(const H5::H5Location &x);
 
 inline std::string hdf5_get_name(const H5::IdComponent &x);
 inline std::vector<hsize_t> hdf5_get_shape(const H5::DataSpace &ds);
 inline std::vector<hsize_t> hdf5_get_shape(const H5::Attribute &attr);
 inline std::vector<hsize_t> hdf5_get_attribute_shape(const H5::H5Location &x, const std::string &attr_name);
-
-inline std::unordered_set<std::string> hdf5_get_attr_names(const H5::H5Location &x);
 
 template<typename T> inline T hdf5_read_attribute(const H5::Attribute &a);
 template<typename T> inline void hdf5_read_attribute(const H5::Attribute &a, T *data, const std::vector<hsize_t> &expected_shape);
@@ -60,14 +62,16 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape);
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &data, const std::vector<hsize_t> &shape);
 
-// Dataset syntax
-//   H5DataSet d = x.openDataSet(name)
 //
-// plus the routines below!
+// Datasets
+//
+
+inline H5::DataSet hdf5_open_dataset(const H5::CommonFG &x, const std::string &dataset_name) { return x.openDataSet(dataset_name); }
+
+inline bool hdf5_dataset_exists(const H5::H5Location &f, const std::string &dataset_name);
 
 inline std::vector<hsize_t> hdf5_get_shape(const H5::DataSet &ds);
 inline std::vector<hsize_t> hdf5_get_dataset_shape(const H5::CommonFG &f, const std::string &dataset_name);
-inline bool hdf5_dataset_exists(const H5::H5Location &f, const std::string &dataset_name);
 
 template<typename T> inline void hdf5_read_dataset(const H5::DataSet &ds, T *out, const std::vector<hsize_t> &expected_shape);
 template<typename T> inline std::vector<T> hdf5_read_dataset(const H5::DataSet &ds, const std::vector<hsize_t> &expected_shape);
