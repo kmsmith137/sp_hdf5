@@ -95,7 +95,7 @@ inline void _attr_enumerate(H5::H5Location &loc, const H5std_string attr_name, v
     s->insert(attr_name);
 }
 
-inline std::unordered_set<std::string> hdf5_get_attr_names(const H5::H5Location &x)
+inline std::unordered_set<std::string> hdf5_get_attribute_names(const H5::H5Location &x)
 {
     std::unordered_set<std::string> s;
     H5::H5Location &y = const_cast<H5::H5Location &> (x);
