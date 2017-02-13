@@ -24,18 +24,18 @@ namespace sp_hdf5 {
 }; // pacify emacs c-mode
 #endif
 
-// These inlines are a little silly, but I never remember the syntax otherwise!
+// Some of these inlines are a little silly, but I like having a uniform syntax!
+
 inline H5::H5File hdf5_open(const std::string &filename)        { return H5::H5File(filename, H5F_ACC_RDONLY); }
 inline H5::H5File hdf5_open_trunc(const std::string &filename)  { return H5::H5File(filename, H5F_ACC_TRUNC); }
 inline H5::H5File hdf5_open_excl(const std::string &filename)   { return H5::H5File(filename, H5F_ACC_EXCL); }
 
-// Group syntax 
-//     H5Group g = x.openGroup(name)          where x is an H5CommonFG (= H5File or H5Group)
-//     H5Group g = x.createGroup(name)
+inline H5::Group hdf5_open_group(const H5::CommonFG &x, const std::string &name)    { return x.openGroup(name); }
+inline H5::Group hdf5_create_group(const H5::CommonFG &x, const std::string &name)  { return x.createGroup(name); }
 
 
 // Attribute syntax 
-//     bool e = x.attrExists(name)             where x is an H5Location (base class of H5File, H5Group, H5DataSet)
+//     bool e = x.attrExists(name)             where x is an H5Location (base class of H5File, Group, H5DataSet)
 //     H5Attribute a = x.openAttribute(name)
 //
 // plus the functions below!

@@ -84,7 +84,7 @@ inline std::vector<hsize_t> hdf5_get_shape(const H5::Attribute &attr)
     return hdf5_get_shape(attr.getSpace());
 }
 
-inline std::vector<hsize_t> hdf5_attribute_shape(const H5::H5Location &x, const std::string &attr_name)
+inline std::vector<hsize_t> hdf5_get_attribute_shape(const H5::H5Location &x, const std::string &attr_name)
 {
     return hdf5_get_shape(x.openAttribute(attr_name));
 }
