@@ -1,6 +1,7 @@
 // This toy program is intended to be documentation, by giving quick-and-dirty examples of
 // key routines, and also a unit test, by verifying that data can be written and read back.
 
+#include <iostream>
 #include "sp_hdf5.hpp"
 
 using namespace H5;
@@ -21,5 +22,12 @@ int main(int argc, char **argv)
     vector<double> data = { 10., 11., 12., 13., 14., 15. };
     hdf5_write_dataset(f, "DSET", data, {2,3});
     
+    // write shape-(2,6,3) dataset, written as three (2,2,3)-chunks
+    hdf5_extendable_dataset<int> d(f, "DSET2", {2,2,3}, 1);  // last argument is 'axis'
+    d.write({111, 112, 113, 121, 122, 123, 211, 212, 213, 221, 222, 223}, {2,2,3});
+    d.write({131, 132, 133, 141, 142, 143, 231, 232, 233, 241, 242, 243}, {2,2,3});
+    d.write({151, 152, 153, 161, 162, 163, 251, 252, 253, 261, 262, 263}, {2,2,3});
+ 
+    cout << "wrote example.hdf5\n";
     return 0;
 }

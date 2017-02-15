@@ -20,9 +20,10 @@ inline void assert_equal(const char *msg, const T &x, const T &y)
 
 int main(int argc, char **argv)
 {
+    cout << "opening example.hdf5...\n";
     H5File f = hdf5_open("example.hdf5");
 
-    unordered_set<string> attrs = hdf5_get_attr_names(f);
+    unordered_set<string> attrs = hdf5_get_attribute_names(f);
 
     cout << "attrs:";
     for (const string &attr_name: attrs)
@@ -46,6 +47,22 @@ int main(int argc, char **argv)
     assert_equal("dset exists", hdf5_dataset_exists(f,"DSET"), true);
     assert_equal("nonexistent dset", hdf5_dataset_exists(f,"NONEXISTENT"), false);
     assert_equal("attr instead of dset", hdf5_dataset_exists(f,"ATTR_INT"), false);
+
+    vector<int> dset2 = hdf5_read_dataset<int> (f, "DSET2", {2,6,3});
+    for (int i = 0; i < 2; i++) {
+	for (int j = 0; j < 6; j++) {
+	    for (int k = 0; k < 3; k++) {
+		int expected_val = (i+1)*100 + (j+1)*10 + (k+1);
+		int actual_val = dset2[18*i + 3*j + k];
+		if (expected_val != actual_val) {
+		    cerr << "DSET2 mismatch: (i,j,k) = (" << i << "," << j << "," << k 
+			 << "): expected " << expected_val << ", got " << actual_val << endl;
+		    exit(1);
+		}
+	    }
+	}
+    }
+    cout << "dset2: looks good\n";
 
     return 0;
 }

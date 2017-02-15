@@ -82,6 +82,21 @@ template<typename T> inline std::vector<T> hdf5_read_dataset(const H5::CommonFG 
 template<typename T> inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, const std::vector<hsize_t> &shape);
 template<typename T> inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, const std::vector<hsize_t> &shape);
 
+//
+// hdf5_extendable_dataset
+//
+
+template<typename T>
+struct hdf5_extendable_dataset {
+    H5::DataSet dataset;
+    std::vector<hsize_t> curr_shape;
+    int axis;
+
+    hdf5_extendable_dataset(const H5::CommonFG &x, const std::string &dataset_name, const std::vector<hsize_t> &chunk_shape, int axis);
+
+    inline void write(const T *data, const std::vector<hsize_t> &data_shape);
+    inline void write(const std::vector<T> &data, const std::vector<hsize_t> &data_shape);
+};
 
 }  // namespace sp_hdf5
 

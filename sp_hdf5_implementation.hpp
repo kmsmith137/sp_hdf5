@@ -290,6 +290,89 @@ inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset
 }
 
 
+// -------------------------------------------------------------------------------------------------
+//
+// hdf5_extendable_dataset
+
+
+template<typename T>
+hdf5_extendable_dataset<T>::hdf5_extendable_dataset(const H5::CommonFG &x, const std::string &dataset_name, const std::vector<hsize_t> &chunk_shape, int axis_)
+{
+    this->axis = axis_;
+
+    int ndim = chunk_shape.size();
+
+    if (ndim < 1)
+        throw std::runtime_error("hdf5_extendable_dataset constructor: attempt to create zero-dimensional dataset");
+    if ((axis < 0) || (axis >= ndim))
+        throw std::runtime_error("hdf5_extendable_dataset constructor: axis is out of range");
+    for (auto s: chunk_shape)
+	if (s <= 0)
+            throw std::runtime_error("hdf5_extendable_dataset constructor: all chunk_shape dimensions must be positive");
+
+    this->curr_shape = chunk_shape;
+    this->curr_shape[axis] = 0;
+
+    std::vector<hsize_t> max_shape = chunk_shape;
+    max_shape[axis] = H5S_UNLIMITED;
+
+    // hid_t space_id = H5Screate_simple(ndim, &curr_shape[0], &max_shape[0]);
+    H5::DataSpace data_space(chunk_shape.size(), &curr_shape[0], &max_shape[0]);
+
+    // hid_t prop_id = H5Pcreate(H5P_DATASET_CREATE);
+    // herr_t err = H5Pset_chunk(prop_id, ndim, &chunk_shape[0]);
+    H5::DSetCreatPropList prop_list;
+    prop_list.setChunk(chunk_shape.size(), &chunk_shape[0]);
+
+    this->dataset = x.createDataSet(dataset_name, hdf5_type<T>(), data_space, prop_list);
+}
+
+template<typename T>
+inline void hdf5_extendable_dataset<T>::write(const T *data, const std::vector<hsize_t> &data_shape)
+{
+    if (data_shape.size() != curr_shape.size())
+	throw std::runtime_error("hdf5_extendable_dataset::write(): data_shape has wrong number of dimensions");
+
+    for (int i = 0; i < (int)data_shape.size(); i++) {
+	if (data_shape[i] <= 0)
+            throw std::runtime_error("hdf5_extendable_dataset::write(): all data_shape dimensions must be positive");
+        if ((i != axis) && (data_shape[i] != curr_shape[i]))
+	    throw std::runtime_error("hdf5_extendable_dataset::write(): data_shape dimensions are mismatched to dimensions specified at construction");
+    }
+
+    std::vector<hsize_t> offsets(data_shape.size(), 0);
+    offsets[axis] = curr_shape[axis];
+
+    std::vector<hsize_t> new_shape = curr_shape;
+    new_shape[axis] += data_shape[axis];
+
+    // herr_t status = H5Dset_extent(dataset_id, &new_shape[0]);
+    this->dataset.extend(&new_shape[0]);
+
+    // hid_t file_space_id = H5Dget_space(dataset_id); 
+    // status = H5Sselect_hyperslab(file_space_id, H5S_SELECT_SET, &offsets[0], NULL, &shape[0], NULL);
+    H5::DataSpace file_space = this->dataset.getSpace();
+    file_space.selectHyperslab(H5S_SELECT_SET, &data_shape[0], &offsets[0]);
+
+    // hid_t mem_space_id = H5Screate_simple(shape.size(), &shape[0], NULL);
+    H5::DataSpace mem_space(data_shape.size(), &data_shape[0]);
+
+    // H5Dwrite(dataset_id, type, mem_space_id, file_space_id, H5P_DEFAULT, data);
+    // write(const void *buf, const DataType &mem_type, const DataSpace &mem_space=DataSpace::ALL, const DataSpace &file_space=DataSpace::ALL, const DSetMemXferPropList &xfer_plist=DSetMemXferPropList::DEFAULT
+    this->dataset.write(data, hdf5_type<T>(), mem_space, file_space);
+    this->curr_shape = new_shape;
+}
+
+
+template<typename T>
+inline void hdf5_extendable_dataset<T>::write(const std::vector<T> &data, const std::vector<hsize_t> &data_shape)
+{
+    if (data.size() != hdf5_vprod(data_shape))
+	throw std::runtime_error("hdf5_extendable_dataset::write(): length of data vector is inconsistent with shape array");
+    this->write(&data[0], data_shape);
+}
+
+
 }  // namespace sp_hdf5
 
 
