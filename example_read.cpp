@@ -36,6 +36,7 @@ int main(int argc, char **argv)
     vector<double> attr1d = hdf5_read_attribute<double> (f, "ATTR_1D", {3});
     vector<int> attr2d = hdf5_read_attribute<int> (f, "ATTR_2D", {3,2});
     vector<string> attr_s1d = hdf5_read_attribute<string> (f, "ATTR_STRING_1D", {3});
+    vector<string> attr_s2d = hdf5_read_attribute<string> (f, "ATTR_STRING_2D", {2,3});
 
     vector<double> dset = hdf5_read_dataset<double> (f, "DSET", {2,3});
 
@@ -45,6 +46,7 @@ int main(int argc, char **argv)
     assert_equal("ATTR_2D", attr2d, vector<int>({4,5,6,7,8,9}));
     assert_equal("ATTR_STRING", s, string("hello"));
     assert_equal("ATTR_STRING_1D", attr_s1d, vector<string> {"hello1", "hello2", "hello3"});
+    assert_equal("ATTR_STRING_2D", attr_s2d, vector<string> {"aa","bb","cc","dd","ee","ff"});
     assert_equal("DSET", dset, vector<double>({10.,11.,12.,13.,14.,15.}));
 
     assert_equal("dset exists", hdf5_dataset_exists(f,"DSET"), true);

@@ -171,21 +171,24 @@ template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::Attribu
     return ret;
 }
 
-
+// hdf5_read_attribute: interface which opens and reads attribute in single call
 template<typename T> inline T hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name)
 {
     return hdf5_read_attribute<T> (x.openAttribute(attr_name));
 }
 
+// hdf5_read_attribute: interface which opens and reads attribute in single call
 template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<hsize_t> &expected_shape)
 {
     return hdf5_read_attribute<T> (x.openAttribute(attr_name), expected_shape);
 }
 
+// hdf5_read_attribute: interface which opens and reads attribute in single call
 template<typename T> inline void hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &expected_shape)
 {
     hdf5_read_attribute(x.openAttribute(attr_name), data, expected_shape);
 }
+
 
 // hdf5_write_attribute(): zero-dimensional non-string case
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T &val)
@@ -204,6 +207,35 @@ template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::
     a.write(strtype, val);
 }
 
+// hdf5_write_attribute(): N-dimensional non-string case
+template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape)
+{
+    H5::DataSpace attrspace(shape.size() ? H5S_SIMPLE : H5S_SCALAR);
+    if (shape.size() > 0)
+	attrspace.setExtentSimple(shape.size(), &shape[0]);
+
+    H5::Attribute a = x.createAttribute(attr_name, hdf5_type<T>(), attrspace);
+    a.write(hdf5_type<T>(), data);
+}
+
+// hdf5_write_attribute(): N-dimensional string case
+template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::string *data, const std::vector<hsize_t> &shape)
+{
+    H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
+
+    H5::DataSpace attrspace(shape.size() ? H5S_SIMPLE : H5S_SCALAR);
+    if (shape.size() > 0)
+	attrspace.setExtentSimple(shape.size(), &shape[0]);
+
+    hsize_t n = hdf5_vprod(shape);
+    std::vector<const char *> c_strings(n);
+    for (hsize_t i = 0; i < n; i++)
+	c_strings[i] = data[i].c_str();
+
+    H5::Attribute a = x.createAttribute(attr_name, strtype, attrspace);
+    a.write(strtype, &c_strings[0]);
+}
+
 // hdf5_write_attribute(): one-dimensional non-string case
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &val)
 {
@@ -218,30 +250,7 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
 // hdf5_write_attribute(): one-dimensional string case
 template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<std::string> &val)
 {
-    H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
-
-    hsize_t n = val.size();
-    H5::DataSpace attrspace(H5S_SIMPLE);
-    attrspace.setExtentSimple(1, &n);
-
-    std::vector<const char *> c_strings(n);
-    for (hsize_t i = 0; i < n; i++)
-	c_strings[i] = val[i].c_str();
-
-    H5::Attribute a = x.createAttribute(attr_name, strtype, attrspace);
-    a.write(strtype, &c_strings[0]);
-}
-
-// hdf5_write_attribute(): N-dimensional non-string case
-template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape)
-{
-    H5::DataSpace attrspace(shape.size() ? H5S_SIMPLE : H5S_SCALAR);
-
-    if (shape.size() > 0)
-	attrspace.setExtentSimple(shape.size(), &shape[0]);
-
-    H5::Attribute a = x.createAttribute(attr_name, hdf5_type<T>(), attrspace);
-    a.write(hdf5_type<T>(), data);
+    hdf5_write_attribute(x, attr_name, &val[0], { val.size() });
 }
 
 // hdf5_write_attribute(): alternate interface for N-dimensional case
