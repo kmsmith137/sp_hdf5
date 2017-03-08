@@ -30,6 +30,7 @@ digestible (I hope!)
    - Not very feature-complete.  Some missing features offhand:
        - Retrieve list of datasets/groups/etc
        - Partial reads/writes
-       - Extendable reads/writes
        - String-valued datasets
 
+   - Minor loose ends
+       - Remove copy in hdf5_read_attribute(), N-dimensional string case (see FIXME in sp_hdf5_implementation.hpp)

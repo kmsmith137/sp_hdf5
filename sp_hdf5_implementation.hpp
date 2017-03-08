@@ -117,19 +117,7 @@ inline void hdf5_check_shape(const H5::Attribute &a, const std::vector<hsize_t> 
     }
 }
 
-template<typename T> inline void hdf5_read_attribute(const H5::Attribute &a, T *data, const std::vector<hsize_t> &expected_shape)
-{
-    hdf5_check_shape(a, expected_shape);
-    a.read(hdf5_type<T>(), data);
-}
-
-template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::Attribute &a, const std::vector<hsize_t> &expected_shape)
-{
-    std::vector<T> ret(hdf5_vprod(expected_shape));
-    hdf5_read_attribute(a, &ret[0], expected_shape);
-    return ret;
-}
-
+// hdf5_read_attribute: zero-dimensional non-string case
 template<typename T> inline T hdf5_read_attribute(const H5::Attribute &a)
 {
     T ret;
@@ -137,6 +125,7 @@ template<typename T> inline T hdf5_read_attribute(const H5::Attribute &a)
     return ret;
 }
 
+// hdf5_read_attribute: zero-dimensional string case
 template<> inline std::string hdf5_read_attribute(const H5::Attribute &a)
 {
     hdf5_check_shape(a, std::vector<hsize_t>());
@@ -147,6 +136,41 @@ template<> inline std::string hdf5_read_attribute(const H5::Attribute &a)
     a.read(strtype, ret);
     return ret;
 }
+
+// hdf5_read_attribute: N-dimensional non-string case
+template<typename T> inline void hdf5_read_attribute(const H5::Attribute &a, T *data, const std::vector<hsize_t> &expected_shape)
+{
+    hdf5_check_shape(a, expected_shape);
+    a.read(hdf5_type<T>(), data);
+}
+
+// hdf5_read_attribute: N-dimensional string case
+template<> inline void hdf5_read_attribute(const H5::Attribute &a, std::string *data, const std::vector<hsize_t> &expected_shape)
+{
+    hdf5_check_shape(a, expected_shape);
+    H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
+    
+    hsize_t n = hdf5_vprod(expected_shape);
+    std::vector<char *> c_ptrs(n, nullptr);
+    a.read(strtype, &c_ptrs[0]);
+
+    // FIXME the std::string constructor allocates a new buffer and copies the data.
+    // Is there a way to tell the constructor that it can claim ownership of the buffer instead?
+    for (hsize_t i = 0; i < n; i++) {
+	data[i] = std::string(c_ptrs[i]);
+	free(c_ptrs[i]);
+	c_ptrs[i] = nullptr;
+    }
+}
+
+// hdf5_read_attribute: alternate N-dimensional interface (applies to both string or non-string cases)
+template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::Attribute &a, const std::vector<hsize_t> &expected_shape)
+{
+    std::vector<T> ret(hdf5_vprod(expected_shape));
+    hdf5_read_attribute(a, &ret[0], expected_shape);
+    return ret;
+}
+
 
 template<typename T> inline T hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name)
 {
@@ -163,6 +187,7 @@ template<typename T> inline void hdf5_read_attribute(const H5::H5Location &x, co
     hdf5_read_attribute(x.openAttribute(attr_name), data, expected_shape);
 }
 
+// hdf5_write_attribute(): zero-dimensional non-string case
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T &val)
 {
     H5::DataSpace attrspace(H5S_SCALAR);
@@ -170,6 +195,7 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
     a.write(hdf5_type<T> (), &val);
 }
 
+// hdf5_write_attribute(): zero-dimensional string case
 template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::string &val)
 {
     H5::DataSpace attrspace(H5S_SCALAR);
@@ -178,6 +204,7 @@ template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::
     a.write(strtype, val);
 }
 
+// hdf5_write_attribute(): one-dimensional non-string case
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &val)
 {
     hsize_t n = val.size();
@@ -188,6 +215,24 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
     a.write(hdf5_type<T>(), &val[0]);
 }
 
+// hdf5_write_attribute(): one-dimensional string case
+template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<std::string> &val)
+{
+    H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
+
+    hsize_t n = val.size();
+    H5::DataSpace attrspace(H5S_SIMPLE);
+    attrspace.setExtentSimple(1, &n);
+
+    std::vector<const char *> c_strings(n);
+    for (hsize_t i = 0; i < n; i++)
+	c_strings[i] = val[i].c_str();
+
+    H5::Attribute a = x.createAttribute(attr_name, strtype, attrspace);
+    a.write(strtype, &c_strings[0]);
+}
+
+// hdf5_write_attribute(): N-dimensional non-string case
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape)
 {
     H5::DataSpace attrspace(shape.size() ? H5S_SIMPLE : H5S_SCALAR);
@@ -199,6 +244,7 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
     a.write(hdf5_type<T>(), data);
 }
 
+// hdf5_write_attribute(): alternate interface for N-dimensional case
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &data, const std::vector<hsize_t> &shape)
 {
     if (data.size() != hdf5_vprod(shape))
