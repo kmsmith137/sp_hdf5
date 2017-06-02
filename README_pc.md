@@ -4,7 +4,8 @@ If you compiled libhdf5 from scratch, you may want to create an `hdf5.pc` file.
 so that pkg-config can find hdf5.  (This is usually unnecessary, but I needed
 to do this to install Kiyo Masui's bitshuffle plugin.)
 
-The hdf5.pc file should look something like this:
+The hdf5.pc file should look something like this (but you may need to change
+the directory names and/or HDF5 version):
 ```
 prefix=/usr/local
 exec_prefix=${prefix}
@@ -28,4 +29,6 @@ It should go in a directory which gets scanned by pkg-config.
   - In CentOS, you can use `/usr/lib64/pkgconfig` (but not `/usr/lib/pkgconfig` or
     `/usr/local/lib*/pkgconfig`)
 
+  - In Ubuntu, you can use `/usr/local/lib/pkgconfig` (you may need to create this directory)
 
+  
