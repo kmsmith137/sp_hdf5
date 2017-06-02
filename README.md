@@ -16,7 +16,8 @@ digestible (I hope!)
    - osx: `brew install homebrew/science/hdf5`
 
    - linux: you'll need to compile from scratch, see the next item!
-     (Both centos and ubuntu do define packages, but they don't enable C++, at least last time I checked)
+     (Both centos and ubuntu do define hdf5 packages, but they're incomplete,
+      at least last time I checked.)
 
    - Compiling from scratch without root privs:
      ```
