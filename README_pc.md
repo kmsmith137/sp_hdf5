@@ -15,7 +15,6 @@ libdir=${exec_prefix}/lib
 Name: hdf5
 Description: HDF5
 Version: 1.8.18
-Requires.private: zlib
 Cflags: -I${includedir}
 Libs: -L${libdir} -lhdf5
 ```
