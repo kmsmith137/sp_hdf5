@@ -34,9 +34,10 @@ inline H5::Group hdf5_open_group(const H5::CommonFG &x, const std::string &name)
 inline H5::Group hdf5_create_group(const H5::CommonFG &x, const std::string &name)  { return x.createGroup(name); }
 
 
+// -------------------------------------------------------------------------------------------------
 //
 // Atributes
-//
+
 
 inline H5::Attribute hdf5_open_attribute(const H5::H5Location &x, const std::string &attr_name)  { return x.openAttribute(attr_name); }
 
@@ -62,9 +63,11 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape);
 template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &data, const std::vector<hsize_t> &shape);
 
+
+// -------------------------------------------------------------------------------------------------
 //
 // Datasets
-//
+
 
 inline H5::DataSet hdf5_open_dataset(const H5::CommonFG &x, const std::string &dataset_name) { return x.openDataSet(dataset_name); }
 
@@ -82,9 +85,11 @@ template<typename T> inline std::vector<T> hdf5_read_dataset(const H5::CommonFG 
 template<typename T> inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, const std::vector<hsize_t> &shape);
 template<typename T> inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, const std::vector<hsize_t> &shape);
 
+
+// -------------------------------------------------------------------------------------------------
 //
-// hdf5_extendable_dataset
-//
+// Extendable datasets
+
 
 template<typename T>
 struct hdf5_extendable_dataset {
@@ -97,6 +102,7 @@ struct hdf5_extendable_dataset {
     inline void write(const T *data, const std::vector<hsize_t> &data_shape);
     inline void write(const std::vector<T> &data, const std::vector<hsize_t> &data_shape);
 };
+
 
 }  // namespace sp_hdf5
 

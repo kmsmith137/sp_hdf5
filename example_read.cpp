@@ -69,5 +69,8 @@ int main(int argc, char **argv)
     }
     cout << "dset2: looks good\n";
 
+    vector<string> string_dset = hdf5_read_dataset<string> (f, "STRING_DSET", {3,2});
+    assert_equal("STRING_DSET", string_dset, vector<string> {"A","BB","CCC","DDDD","EEEEE","FFFFFF"});
+
     return 0;
 }

@@ -292,6 +292,7 @@ inline bool hdf5_dataset_exists(const H5::H5Location &f, const std::string &data
     return (infobuf.type == H5O_TYPE_DATASET);
 }
 
+// T=std::string is a special case, see below
 template<typename T>
 inline void hdf5_read_dataset(const H5::DataSet &d, T *out, const std::vector<hsize_t> &expected_shape)
 {
@@ -328,6 +329,7 @@ inline std::vector<T> hdf5_read_dataset(const H5::CommonFG &f, const std::string
     return hdf5_read_dataset<T> (f.openDataSet(dataset_name), expected_shape);
 }
 
+// T=std::string is a special case, see below
 template<typename T> 
 inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, const std::vector<hsize_t> &shape)
 {
@@ -342,6 +344,79 @@ inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset
     if (data.size() != hdf5_vprod(shape))
 	throw std::runtime_error("hdf5_write_dataset: " + dataset_name + ": length of data vector is inconsistent with shape array");
     hdf5_write_dataset(f, dataset_name, &data[0], shape);
+}
+
+
+// -------------------------------------------------------------------------------------------------
+//
+// String-valued datasets
+
+
+template<>
+inline void hdf5_read_dataset(const H5::DataSet &d, std::string *out, const std::vector<hsize_t> &expected_shape)
+{
+    H5::DataType filetype = d.getDataType();
+    H5::DataSpace filespace = d.getSpace();
+    std::vector<hsize_t> actual_shape = hdf5_get_shape(filespace);
+    
+    if (actual_shape != expected_shape) {
+	std::string msg = hdf5_get_name(d) + " has shape=" + hdf5_vstr(actual_shape) + ", expected_shape=" + hdf5_vstr(expected_shape);
+	throw std::runtime_error(msg);
+    }
+
+    bool is_string = filetype.detectClass(H5T_STRING);
+    if (!is_string)
+	throw std::runtime_error(hdf5_get_name(d) + " is not a string-valued dataset as expected");
+
+    bool is_variable = filetype.isVariableStr();
+    hsize_t nstrings = hdf5_vprod(expected_shape);
+
+    if (is_variable) {
+	// Variable-length case
+	H5::StrType memtype(H5::PredType::C_S1, H5T_VARIABLE);
+	H5::DataSpace memspace(expected_shape.size(), &expected_shape[0]);
+	
+	std::vector<char *> c_strings(nstrings, nullptr);    
+	d.read(&c_strings[0], memtype, memspace, filespace);
+	
+	for (hsize_t i = 0; i < nstrings; i++) {
+	    if (!c_strings[i])
+		throw std::runtime_error(hdf5_get_name(d) + ": sp_hdf5 internal error: unexpected null pointer encountered");
+	    out[i] = std::string(c_strings[i]);
+	}
+	
+	d.vlenReclaim(memtype, memspace, H5::DSetMemXferPropList::DEFAULT, &c_strings[0]);
+    }
+    else {
+	// Fixed-length case
+	// FIXME: not tested!
+	
+	size_t slen = filetype.getSize();
+	H5::StrType memtype(H5::PredType::C_S1, slen);
+	H5::DataSpace memspace(expected_shape.size(), &expected_shape[0]);
+
+	std::vector<char> buf(nstrings * (slen+1), 0);
+	d.read(&buf[0], memtype, memspace, filespace);
+
+	for (hsize_t i = 0; i < nstrings; i++)
+	    out[i] = std::string(&buf[i*(slen+1)]);
+    }	
+}
+
+
+template<>
+inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::string *data, const std::vector<hsize_t> &shape)
+{
+    H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
+    H5::DataSpace dataspace(shape.size(), &shape[0]);
+    H5::DataSet dataset = f.createDataSet(dataset_name, strtype, dataspace);
+
+    hsize_t n = hdf5_vprod(shape);
+    std::vector<const char *> c_strings(n);
+    for (hsize_t i = 0; i < n; i++)
+	c_strings[i] = data[i].c_str();
+
+    dataset.write(&c_strings[0], strtype);
 }
 
 

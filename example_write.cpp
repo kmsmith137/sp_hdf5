@@ -29,6 +29,10 @@ int main(int argc, char **argv)
     d.write({111, 112, 113, 121, 122, 123, 211, 212, 213, 221, 222, 223}, {2,2,3});
     d.write({131, 132, 133, 141, 142, 143, 231, 232, 233, 241, 242, 243}, {2,2,3});
     d.write({151, 152, 153, 161, 162, 163, 251, 252, 253, 261, 262, 263}, {2,2,3});
+
+    // write string-valued dataset
+    vector<string> string_data = { "A", "BB", "CCC", "DDDD", "EEEEE", "FFFFFF" };
+    hdf5_write_dataset(f, "STRING_DSET", string_data, {3,2});
  
     cout << "wrote example.hdf5\n";
     return 0;
