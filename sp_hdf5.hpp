@@ -67,6 +67,13 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
 // -------------------------------------------------------------------------------------------------
 //
 // Datasets
+//
+// Note: the 'compression' argument should be a list of compression algorithms, to be tried in order.
+// Currently supported algorithms are "none" and "bitshuffle" (FIXME: more to come).
+//
+// For example, compression = { "bitshuffle", "none" } corresponds to optional bitshuffle compression,
+// whereas compression = { "bitshuffle" } corresponds to mandatory bitshuffle compression.  If 'compression'
+// is an empty list, this is equivalent to { "none" }.
 
 
 inline H5::DataSet hdf5_open_dataset(const H5::CommonFG &x, const std::string &dataset_name) { return x.openDataSet(dataset_name); }
@@ -82,8 +89,13 @@ template<typename T> inline std::vector<T> hdf5_read_dataset(const H5::DataSet &
 template<typename T> inline void hdf5_read_dataset(const H5::CommonFG &f, const std::string &dataset_name, T *out, const std::vector<hsize_t> &expected_shape);
 template<typename T> inline std::vector<T> hdf5_read_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<hsize_t> &expected_shape);
 
-template<typename T> inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, const std::vector<hsize_t> &shape);
-template<typename T> inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, const std::vector<hsize_t> &shape);
+template<typename T> 
+inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, 
+			       const std::vector<hsize_t> &shape, const std::vector<std::string> &compression = std::vector<std::string>());
+
+template<typename T> 
+inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, 
+			       const std::vector<hsize_t> &shape, const std::vector<std::string> &compression = std::vector<std::string>());
 
 
 // -------------------------------------------------------------------------------------------------
@@ -97,7 +109,9 @@ struct hdf5_extendable_dataset {
     std::vector<hsize_t> curr_shape;
     int axis;
 
-    hdf5_extendable_dataset(const H5::CommonFG &x, const std::string &dataset_name, const std::vector<hsize_t> &chunk_shape, int axis);
+    // For the meaning of the 'compression' argument, see above.
+    hdf5_extendable_dataset(const H5::CommonFG &x, const std::string &dataset_name, const std::vector<hsize_t> &chunk_shape, int axis,
+			    const std::vector<std::string> &compression = std::vector<std::string>());
 
     inline void write(const T *data, const std::vector<hsize_t> &data_shape);
     inline void write(const std::vector<T> &data, const std::vector<hsize_t> &data_shape);

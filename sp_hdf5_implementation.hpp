@@ -264,6 +264,62 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
 
 // -------------------------------------------------------------------------------------------------
 //
+// Helper functions for compression.
+
+
+inline bool hdf5_filter_avail(H5Z_filter_t filter_id)
+{
+    htri_t avail = H5Zfilter_avail(filter_id);
+    if (avail < 0)
+	throw std::runtime_error("sp_hdf5: H5Zfilter_avail() failed?!");
+    return (avail > 0);
+}
+
+
+// The meaning of the 'chunk_shape' argument deserves some explanation.  If compression is enabled, then
+// HDF5 requires chunking to also be enabled on the dataset.  If the caller has done this already, then
+// the 'chunk_shape' argument should be a length-zero vector.  If the caller has not enabled chunking,
+// and hdf5_set_compression() decides to enable compression, then 'chunk_shape' is the chunk size that
+// should be used.
+
+inline void hdf5_set_compression(H5::DSetCreatPropList &prop_list, const std::vector<std::string> &compression, const std::vector<hsize_t> &chunk_shape)
+{
+    if (compression.size() == 0)
+	return;
+
+    // FIXME: implement more compression algorithms (esp. lz4)
+
+    for (const std::string &algo: compression) {
+	if (algo == "none")
+	    return;
+	else if (algo == "bitshuffle") {
+	    H5Z_filter_t filter_id = 32008;
+	    std::vector<unsigned int> cd_values = { 0, 2 };  // trailing "2" means combine with LZ4 compression
+
+	    // If hdf5_filter_avail() returns false, we fall through to the next compression algorithm.
+	    if (hdf5_filter_avail(filter_id)) {
+		if (chunk_shape.size() > 0)
+		    prop_list.setChunk(chunk_shape.size(), &chunk_shape[0]);
+		prop_list.setFilter(filter_id, H5Z_FLAG_MANDATORY, cd_values.size(), &cd_values[0]);
+		return;
+	    }
+	}
+	else
+	    throw std::runtime_error("sp_hdf5: unrecognized compression algorithm '" + algo + "'");
+    }
+
+    std::stringstream ss;
+    ss << "sp_hdf5: couldn't satisfy compression request {\"" << compression[0] << "\"";
+    for (size_t i = 1; i < compression.size(); i++)
+	ss << ", \"" << compression[i] << "\"";
+    ss << "}, maybe you should append \"none\"?";
+
+    throw std::runtime_error(ss.str());
+}
+
+
+// -------------------------------------------------------------------------------------------------
+//
 // Datasets
 
 
@@ -331,19 +387,25 @@ inline std::vector<T> hdf5_read_dataset(const H5::CommonFG &f, const std::string
 
 // T=std::string is a special case, see below
 template<typename T> 
-inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, const std::vector<hsize_t> &shape)
+inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, 
+			       const std::vector<hsize_t> &shape, const std::vector<std::string> &compression)
 {
+    // Note that if compression is used, we compress the whole dataset as a single chunk.
+    H5::DSetCreatPropList prop_list;
+    hdf5_set_compression(prop_list, compression, shape);
+
     H5::DataSpace dataspace(shape.size(), &shape[0]);
-    H5::DataSet dataset = f.createDataSet(dataset_name, hdf5_type<T>(), dataspace);
+    H5::DataSet dataset = f.createDataSet(dataset_name, hdf5_type<T>(), dataspace, prop_list);
     dataset.write(data, hdf5_type<T>());
 }
 
 template<typename T> 
-inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, const std::vector<hsize_t> &shape)
+inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, 
+			       const std::vector<hsize_t> &shape, const std::vector<std::string> &compression)
 {
     if (data.size() != hdf5_vprod(shape))
 	throw std::runtime_error("hdf5_write_dataset: " + dataset_name + ": length of data vector is inconsistent with shape array");
-    hdf5_write_dataset(f, dataset_name, &data[0], shape);
+    hdf5_write_dataset(f, dataset_name, &data[0], shape, compression);
 }
 
 
@@ -405,11 +467,16 @@ inline void hdf5_read_dataset(const H5::DataSet &d, std::string *out, const std:
 
 
 template<>
-inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::string *data, const std::vector<hsize_t> &shape)
+inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::string *data, 
+			       const std::vector<hsize_t> &shape, const std::vector<std::string> &compression)
 {
+    // Note that if compression is used, we compress the whole dataset as a single chunk.
+    H5::DSetCreatPropList prop_list;
+    hdf5_set_compression(prop_list, compression, shape);
+
     H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
     H5::DataSpace dataspace(shape.size(), &shape[0]);
-    H5::DataSet dataset = f.createDataSet(dataset_name, strtype, dataspace);
+    H5::DataSet dataset = f.createDataSet(dataset_name, strtype, dataspace, prop_list);
 
     hsize_t n = hdf5_vprod(shape);
     std::vector<const char *> c_strings(n);
@@ -426,7 +493,9 @@ inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset
 
 
 template<typename T>
-hdf5_extendable_dataset<T>::hdf5_extendable_dataset(const H5::CommonFG &x, const std::string &dataset_name, const std::vector<hsize_t> &chunk_shape, int axis_)
+hdf5_extendable_dataset<T>::hdf5_extendable_dataset(const H5::CommonFG &x, const std::string &dataset_name, 
+						    const std::vector<hsize_t> &chunk_shape, int axis_, 
+						    const std::vector<std::string> &compression)
 {
     this->axis = axis_;
 
@@ -446,13 +515,12 @@ hdf5_extendable_dataset<T>::hdf5_extendable_dataset(const H5::CommonFG &x, const
     std::vector<hsize_t> max_shape = chunk_shape;
     max_shape[axis] = H5S_UNLIMITED;
 
-    // hid_t space_id = H5Screate_simple(ndim, &curr_shape[0], &max_shape[0]);
     H5::DataSpace data_space(chunk_shape.size(), &curr_shape[0], &max_shape[0]);
 
-    // hid_t prop_id = H5Pcreate(H5P_DATASET_CREATE);
-    // herr_t err = H5Pset_chunk(prop_id, ndim, &chunk_shape[0]);
+    // Enable chunking first, then call hdf5_set_compression() with chunk_size = { }
     H5::DSetCreatPropList prop_list;
     prop_list.setChunk(chunk_shape.size(), &chunk_shape[0]);
+    hdf5_set_compression(prop_list, compression, { });
 
     this->dataset = x.createDataSet(dataset_name, hdf5_type<T>(), data_space, prop_list);
 }
