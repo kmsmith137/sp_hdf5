@@ -83,11 +83,16 @@ inline bool hdf5_dataset_exists(const H5::H5Location &f, const std::string &data
 inline std::vector<hsize_t> hdf5_get_shape(const H5::DataSet &ds);
 inline std::vector<hsize_t> hdf5_get_dataset_shape(const H5::CommonFG &f, const std::string &dataset_name);
 
+
 template<typename T> inline void hdf5_read_dataset(const H5::DataSet &ds, T *out, const std::vector<hsize_t> &expected_shape);
 template<typename T> inline std::vector<T> hdf5_read_dataset(const H5::DataSet &ds, const std::vector<hsize_t> &expected_shape);
 
 template<typename T> inline void hdf5_read_dataset(const H5::CommonFG &f, const std::string &dataset_name, T *out, const std::vector<hsize_t> &expected_shape);
 template<typename T> inline std::vector<T> hdf5_read_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<hsize_t> &expected_shape);
+
+template<typename T> inline void hdf5_read_partial_dataset(const H5::DataSet &ds, T *out, const std::vector<hsize_t> &offset, const std::vector<hsize_t> &size);
+template<typename T> inline std::vector<T> hdf5_read_partial_dataset(const H5::DataSet &ds, const std::vector<hsize_t> &offset, const std::vector<hsize_t> &size);
+
 
 template<typename T> 
 inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, 

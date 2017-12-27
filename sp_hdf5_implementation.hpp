@@ -385,6 +385,33 @@ inline std::vector<T> hdf5_read_dataset(const H5::CommonFG &f, const std::string
     return hdf5_read_dataset<T> (f.openDataSet(dataset_name), expected_shape);
 }
 
+template<typename T> 
+inline void hdf5_read_partial_dataset(const H5::DataSet &ds, T *out, const std::vector<hsize_t> &offset, const std::vector<hsize_t> &size)
+{
+    H5::DataSpace filespace = ds.getSpace();
+
+    size_t nd = filespace.getSimpleExtentNdims();
+    
+    if (offset.size() != size.size())
+	throw std::runtime_error("sp_hdf5::hdf5_read_partial_dataset(): 'offset' and 'size' arrays have different lengths");
+    if (offset.size() != nd)
+	throw std::runtime_error("sp_hdf5::hdf5_read_partial_dataset(): length of 'offset' and 'size' arrays does not match number of dimensions in dataset");
+
+    filespace.selectHyperslab(H5S_SELECT_SET, &size[0], &offset[0]);
+
+    H5::DataSpace memspace(size.size(), &size[0]);
+    ds.read(out, hdf5_type<T>(), memspace, filespace);
+}
+
+template<typename T> 
+inline std::vector<T> hdf5_read_partial_dataset(const H5::DataSet &ds, const std::vector<hsize_t> &offset, const std::vector<hsize_t> &size)
+{
+    std::vector<T> ret(hdf5_vprod(size));
+    hdf5_read_partial_dataset(ds, &ret[0], offset, size);
+    return ret;
+}
+
+
 // T=std::string is a special case, see below
 template<typename T> 
 inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, 
