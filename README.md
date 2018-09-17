@@ -26,9 +26,9 @@ digestible (I hope!)
 
    - Compiling from scratch without root privs:
      ```
-     wget https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.19.tar.gz
-     tar zxvf hdf5-1.8.19.tar.gz
-     cd hdf5-1.8.19
+     wget https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.20.tar.gz
+     tar zxvf hdf5-1.8.20.tar.gz
+     cd hdf5-1.8.20
      ./configure --enable-cxx --prefix=$HOME
      make -j4
      make install
@@ -36,9 +36,9 @@ digestible (I hope!)
 
    - Compiling from scratch with root privs:
      ```
-     wget https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.19.tar.gz
-     tar zxvf hdf5-1.8.19.tar.gz
-     cd hdf5-1.8.19
+     wget https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.20.tar.gz
+     tar zxvf hdf5-1.8.20.tar.gz
+     cd hdf5-1.8.20
      ./configure --enable-cxx --prefix=/usr/local
      make -j4
      sudo make install
