@@ -19,6 +19,10 @@
 #include <unordered_set>
 #include <H5Cpp.h>
 
+#if ((H5_VERS_MAJOR != 1) || (H5_VERS_MINOR != 10))
+#error "Fatal: HDF5 version 1.10 is required!"
+#else
+
 namespace sp_hdf5 {
 #if 0
 }; // pacify emacs c-mode
@@ -125,6 +129,9 @@ struct hdf5_extendable_dataset {
 
 }  // namespace sp_hdf5
 
+
 #include "sp_hdf5_implementation.hpp"
+
+#endif // ((H5_VERS_MAJOR != 1) || (H5_VERS_MINOR != 10))
 
 #endif // _SP_HDF5_HPP

@@ -1,11 +1,14 @@
 #ifndef _SP_HDF5_IMPLEMENTATION_HPP
 #define _SP_HDF5_IMPLEMENTATION_HPP
 
+#if ((H5_VERS_MAJOR != 1) || (H5_VERS_MINOR != 10))
+#error "Fatal: HDF5 version 1.10 is required!"
+#else
+
 namespace sp_hdf5 {
 #if 0
 }; // pacify emacs c-mode
 #endif
-
 
 // -------------------------------------------------------------------------------------------------
 //
@@ -72,7 +75,6 @@ inline std::string hdf5_get_name(const H5::IdComponent &x)
 
     return std::string(&buf[0]);
 }
-
 
 // -------------------------------------------------------------------------------------------------
 //
@@ -597,8 +599,9 @@ inline void hdf5_extendable_dataset<T>::write(const std::vector<T> &data, const 
     this->write(&data[0], data_shape);
 }
 
-
 }  // namespace sp_hdf5
 
+
+#endif ((H5_VERS_MAJOR != 1) || (H5_VERS_MINOR != 10))
 
 #endif // _SP_HDF5_IMPLEMENTATION_HPP
