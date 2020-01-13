@@ -3,3 +3,7 @@
 
 INCDIR ?= $(HOME)/include
 CPP=g++ -std=c++11 -Wall -O3 -I. -I$(INCDIR) -L$(HOME)/lib
+
+# Kendrick's ubuntu hack
+CPP += -I/usr/include/hdf5/serial
+CPP += -L/usr/lib/x86_64-linux-gnu/hdf5/serial

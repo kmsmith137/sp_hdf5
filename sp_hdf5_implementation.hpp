@@ -84,21 +84,21 @@ inline std::vector<hsize_t> hdf5_get_shape(const H5::Attribute &attr)
     return hdf5_get_shape(attr.getSpace());
 }
 
-inline std::vector<hsize_t> hdf5_get_attribute_shape(const H5::H5Location &x, const std::string &attr_name)
+inline std::vector<hsize_t> hdf5_get_attribute_shape(const H5::H5Object &x, const std::string &attr_name)
 {
     return hdf5_get_shape(x.openAttribute(attr_name));
 }
 
-inline void _attr_enumerate(H5::H5Location &loc, const H5std_string attr_name, void *opaque)
+inline void _attr_enumerate(H5::H5Object &loc, const H5std_string attr_name, void *opaque)
 {
     auto s = reinterpret_cast<std::unordered_set<std::string> *> (opaque);
     s->insert(attr_name);
 }
 
-inline std::unordered_set<std::string> hdf5_get_attribute_names(const H5::H5Location &x)
+inline std::unordered_set<std::string> hdf5_get_attribute_names(const H5::H5Object &x)
 {
     std::unordered_set<std::string> s;
-    H5::H5Location &y = const_cast<H5::H5Location &> (x);
+    H5::H5Object &y = const_cast<H5::H5Object &> (x);
 
     int ret = y.iterateAttrs(_attr_enumerate, NULL, &s);
     if (ret != 0)
@@ -172,26 +172,26 @@ template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::Attribu
 }
 
 // hdf5_read_attribute: interface which opens and reads attribute in single call
-template<typename T> inline T hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name)
+template<typename T> inline T hdf5_read_attribute(const H5::H5Object &x, const std::string &attr_name)
 {
     return hdf5_read_attribute<T> (x.openAttribute(attr_name));
 }
 
 // hdf5_read_attribute: interface which opens and reads attribute in single call
-template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<hsize_t> &expected_shape)
+template<typename T> inline std::vector<T> hdf5_read_attribute(const H5::H5Object &x, const std::string &attr_name, const std::vector<hsize_t> &expected_shape)
 {
     return hdf5_read_attribute<T> (x.openAttribute(attr_name), expected_shape);
 }
 
 // hdf5_read_attribute: interface which opens and reads attribute in single call
-template<typename T> inline void hdf5_read_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &expected_shape)
+template<typename T> inline void hdf5_read_attribute(const H5::H5Object &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &expected_shape)
 {
     hdf5_read_attribute(x.openAttribute(attr_name), data, expected_shape);
 }
 
 
 // hdf5_write_attribute(): zero-dimensional non-string case
-template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T &val)
+template<typename T> inline void hdf5_write_attribute(const H5::H5Object &x, const std::string &attr_name, const T &val)
 {
     H5::DataSpace attrspace(H5S_SCALAR);
     H5::Attribute a = x.createAttribute(attr_name, hdf5_type<T> (), attrspace);
@@ -199,7 +199,7 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
 }
 
 // hdf5_write_attribute(): zero-dimensional string case
-template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::string &val)
+template<> inline void hdf5_write_attribute(const H5::H5Object &x, const std::string &attr_name, const std::string &val)
 {
     H5::DataSpace attrspace(H5S_SCALAR);
     H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
@@ -208,7 +208,7 @@ template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::
 }
 
 // hdf5_write_attribute(): N-dimensional non-string case
-template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape)
+template<typename T> inline void hdf5_write_attribute(const H5::H5Object &x, const std::string &attr_name, const T *data, const std::vector<hsize_t> &shape)
 {
     H5::DataSpace attrspace(shape.size() ? H5S_SIMPLE : H5S_SCALAR);
     if (shape.size() > 0)
@@ -219,7 +219,7 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
 }
 
 // hdf5_write_attribute(): N-dimensional string case
-template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::string *data, const std::vector<hsize_t> &shape)
+template<> inline void hdf5_write_attribute(const H5::H5Object &x, const std::string &attr_name, const std::string *data, const std::vector<hsize_t> &shape)
 {
     H5::StrType strtype(H5::PredType::C_S1, H5T_VARIABLE);
 
@@ -237,7 +237,7 @@ template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::
 }
 
 // hdf5_write_attribute(): one-dimensional non-string case
-template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &val)
+template<typename T> inline void hdf5_write_attribute(const H5::H5Object &x, const std::string &attr_name, const std::vector<T> &val)
 {
     hsize_t n = val.size();
     H5::DataSpace attrspace(H5S_SIMPLE);
@@ -248,13 +248,13 @@ template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, c
 }
 
 // hdf5_write_attribute(): one-dimensional string case
-template<> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<std::string> &val)
+template<> inline void hdf5_write_attribute(const H5::H5Object &x, const std::string &attr_name, const std::vector<std::string> &val)
 {
     hdf5_write_attribute(x, attr_name, &val[0], { val.size() });
 }
 
 // hdf5_write_attribute(): alternate interface for N-dimensional case
-template<typename T> inline void hdf5_write_attribute(const H5::H5Location &x, const std::string &attr_name, const std::vector<T> &data, const std::vector<hsize_t> &shape)
+template<typename T> inline void hdf5_write_attribute(const H5::H5Object &x, const std::string &attr_name, const std::vector<T> &data, const std::vector<hsize_t> &shape)
 {
     if (data.size() != hdf5_vprod(shape))
 	throw std::runtime_error("hdf5_write_attribute: " + attr_name + ": length of data vector is inconsistent with shape array");
@@ -328,7 +328,7 @@ inline std::vector<hsize_t> hdf5_get_shape(const H5::DataSet &ds)
     return hdf5_get_shape(ds.getSpace());
 }
 
-inline std::vector<hsize_t> hdf5_get_dataset_shape(const H5::CommonFG &f, const std::string &dataset_name)
+inline std::vector<hsize_t> hdf5_get_dataset_shape(const H5::H5Location &f, const std::string &dataset_name)
 {
     return hdf5_get_shape(f.openDataSet(dataset_name));
 }
@@ -374,13 +374,13 @@ inline std::vector<T> hdf5_read_dataset(const H5::DataSet &ds, const std::vector
 }
 
 template<typename T> 
-inline void hdf5_read_dataset(const H5::CommonFG &f, const std::string &dataset_name, T *out, const std::vector<hsize_t> &expected_shape)
+inline void hdf5_read_dataset(const H5::H5Location &f, const std::string &dataset_name, T *out, const std::vector<hsize_t> &expected_shape)
 {
     hdf5_read_dataset(f.openDataSet(dataset_name), out, expected_shape);
 }
 
 template<typename T> 
-inline std::vector<T> hdf5_read_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<hsize_t> &expected_shape)
+inline std::vector<T> hdf5_read_dataset(const H5::H5Location &f, const std::string &dataset_name, const std::vector<hsize_t> &expected_shape)
 {
     return hdf5_read_dataset<T> (f.openDataSet(dataset_name), expected_shape);
 }
@@ -414,7 +414,7 @@ inline std::vector<T> hdf5_read_partial_dataset(const H5::DataSet &ds, const std
 
 // T=std::string is a special case, see below
 template<typename T> 
-inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const T *data, 
+inline void hdf5_write_dataset(const H5::H5Location &f, const std::string &dataset_name, const T *data, 
 			       const std::vector<hsize_t> &shape, const std::vector<std::string> &compression)
 {
     // Note that if compression is used, we compress the whole dataset as a single chunk.
@@ -427,7 +427,7 @@ inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset
 }
 
 template<typename T> 
-inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::vector<T> &data, 
+inline void hdf5_write_dataset(const H5::H5Location &f, const std::string &dataset_name, const std::vector<T> &data, 
 			       const std::vector<hsize_t> &shape, const std::vector<std::string> &compression)
 {
     if (data.size() != hdf5_vprod(shape))
@@ -494,7 +494,7 @@ inline void hdf5_read_dataset(const H5::DataSet &d, std::string *out, const std:
 
 
 template<>
-inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset_name, const std::string *data, 
+inline void hdf5_write_dataset(const H5::H5Location &f, const std::string &dataset_name, const std::string *data, 
 			       const std::vector<hsize_t> &shape, const std::vector<std::string> &compression)
 {
     // Note that if compression is used, we compress the whole dataset as a single chunk.
@@ -520,7 +520,7 @@ inline void hdf5_write_dataset(const H5::CommonFG &f, const std::string &dataset
 
 
 template<typename T>
-hdf5_extendable_dataset<T>::hdf5_extendable_dataset(const H5::CommonFG &x, const std::string &dataset_name, 
+hdf5_extendable_dataset<T>::hdf5_extendable_dataset(const H5::H5Location &x, const std::string &dataset_name, 
 						    const std::vector<hsize_t> &chunk_shape, int axis_, 
 						    const std::vector<std::string> &compression)
 {
