@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+hpp_files = [
+    'sp_hdf5.hpp',
+    'sp_hdf5_implementation.hpp'
+]
+
+example_programs = [
+    'example_write.cpp',
+    'example_read.cpp'
+]
+
+
+####################################################################################################
+
+
+import build_helpers
+
+# If called recursively in superbuild, a global persistent ConfigureScript will be returned.
+cs = build_helpers.get_global_configure_script()
+
+# Prerequisites.
+cs.configure_install_directories(bin=False, inc=True, lib=False, py=False)
+cs.configure_cpp('-std=c++11 -fPIC -Wall -Wno-strict-aliasing -O3 -march=native -ffast-math -funroll-loops --param inline-unit-growth=10000')
+cs.configure_external_library(build_helpers.external_libraries.hdf5)
+
+# Install .hpp header files.
+cs.install_cpp_headers(hpp_files)
+
+# Example programs.
+for cpp_filename in example_programs:
+    cs.make_binary(sources=[cpp_filename], libraries=['hdf5'], test=False, install=False)
+
+# FIXME define unit test which runs (example_write, example_read) back-to-back.
+
+# If called recursively in superbuild, write_output_files() will not be called here.
+if __name__ == '__main__':
+    cs.write_output_files()
