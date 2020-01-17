@@ -29,9 +29,11 @@ namespace sp_hdf5 {
 #if (H5_VERS_MAJOR == 1) && (H5_VERS_MINOR <= 8)
 using _attr_holder = H5::H5Location;
 using _dset_holder = H5::CommonFG;
+using _group_holder = H5::CommonFG;
 #else
 using _attr_holder = H5::H5Object;
 using _dset_holder = H5::H5Location;
+using _group_holder = H5::H5Location;
 #endif
 
 
@@ -40,8 +42,8 @@ inline H5::H5File hdf5_open(const std::string &filename)        { return H5::H5F
 inline H5::H5File hdf5_open_trunc(const std::string &filename)  { return H5::H5File(filename, H5F_ACC_TRUNC); }
 inline H5::H5File hdf5_open_excl(const std::string &filename)   { return H5::H5File(filename, H5F_ACC_EXCL); }
 
-inline H5::Group hdf5_open_group(const H5::Group &x, const std::string &name)    { return x.openGroup(name); }
-inline H5::Group hdf5_create_group(const H5::Group &x, const std::string &name)  { return x.createGroup(name); }
+inline H5::Group hdf5_open_group(const _group_holder &x, const std::string &name)    { return x.openGroup(name); }
+inline H5::Group hdf5_create_group(const _group_holder &x, const std::string &name)  { return x.createGroup(name); }
 
 
 // -------------------------------------------------------------------------------------------------

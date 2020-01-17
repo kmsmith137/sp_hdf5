@@ -33,7 +33,11 @@ int main(int argc, char **argv)
     // write string-valued dataset
     vector<string> string_data = { "A", "BB", "CCC", "DDDD", "EEEEE", "FFFFFF" };
     hdf5_write_dataset(f, "STRING_DSET", string_data, {3,2});
- 
+
+    // create group
+    H5::Group g = hdf5_create_group(f, "GROUP");
+    H5::Group sg = hdf5_create_group(g, "SUBGROUP");
+    
     cout << "wrote example.hdf5\n";
     return 0;
 }
