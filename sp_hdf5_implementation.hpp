@@ -338,8 +338,9 @@ inline bool hdf5_dataset_exists(const H5::H5Location &f, const std::string &data
     if (ret <= 0)
 	return false;
 
+    // Note: the 'fields=H5O_INFO_BASIC' argument was added in HDF5 1.12
     H5O_info_t infobuf;
-    herr_t status = H5Oget_info_by_name(f.getId(), dataset_name.c_str(), &infobuf, H5P_DEFAULT);
+    herr_t status = H5Oget_info_by_name(f.getId(), dataset_name.c_str(), &infobuf, H5O_INFO_BASIC, H5P_DEFAULT);
     if (status < 0)
 	throw std::runtime_error("H5Oget_info_by_name() failed?!");
 
